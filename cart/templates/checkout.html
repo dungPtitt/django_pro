@@ -1,0 +1,159 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+    {% comment %} <div class="row" style="margin-top: 20px"> {% endcomment %}
+		<div class="col-lg-6" style="margin-top: 20px">
+			<div class="box-element" id="form-wrapper">
+				<form id="form">
+					<div id="user-info">
+						<div class="form-field" style="margin-top: 10px">
+							<input required class="form-control" type="text" name="name" placeholder="Name..">
+						</div>
+						<div class="form-field" style="margin-top: 10px">
+							<input required class="form-control" type="email" name="email" placeholder="Email..">
+						</div>
+					</div>
+					
+					<div id="shipping-info">
+						<hr>
+						<p>Shipping Information:</p>
+						<hr>
+						<div class="form-field" style="margin-top: 10px">
+							<input class="form-control" type="text" name="address" placeholder="Address..">
+						</div>
+						<div class="form-field" style="margin-top: 10px">
+							<input class="form-control" type="text" name="city" placeholder="City..">
+						</div>
+						<div class="form-field" style="margin-top: 10px">
+							<input class="form-control" type="text" name="state" placeholder="State..">
+						</div>
+						<div class="form-field" style="margin-top: 10px">
+							<input class="form-control" type="text" name="zipcode" placeholder="Zip code..">
+						</div>
+						<div class="form-field" style="margin-top: 10px">
+							<input class="form-control" type="text" name="country" placeholder="Zip code..">
+						</div>
+					</div>
+
+					<hr>
+					<input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
+				</form>
+			</div>
+
+			<br>
+			<div class="box-element" hidden id="payment-info">
+				<small>Paypal Options</small>
+				{% comment %} <button id="make-payment">Make payment</button> {% endcomment %}
+				<div id="paypal-button-container"></div>
+			</div>
+			
+		</div>
+
+		<div class="col-lg-6" style="margin-top: 20px">
+			<div class="box-element">
+				<a  class="btn btn-outline-dark" href="{% url 'cart' %}">&#x2190; Back to Cart</a>
+				<hr>
+				<h3>Order Summary</h3>
+				<hr>
+				{% for item in items %}
+				<div class="row" style="margin-top: 15px;  display: flex; align-items: center; justify-content: center;">
+					<div style="flex:4" class="col-4">
+						<img 
+						class="img-fluid rounded-3" 
+						style="border-radius: 10px; height: 80px"
+						src="{{item.book.image.url}}">
+					</div>
+					<div class="col-4"><p>{{item.book.title}}</p></div>
+					<div class="col-2"><p>${{item.book.price|floatformat:2}}</p></div>
+					<div class="col-2"><p>x{{item.quantity}}</p></div>
+				</div>
+				{% endfor %}
+				{% comment %} <h5>Items:   {{cart.get_cart_items}}</h5> {% endcomment %}
+				<h5 style="margin-top: 20px">Total:   ${{cart.get_cart_total|floatformat:2}}</h5>
+			</div>
+		{% comment %} </div> {% endcomment %}
+	</div>
+
+	<script src="https://www.paypal.com/sdk/js?client-id=AWZgHsloYbQgD3KlOvypPyf739SfnCmFd6hiA16G-Z73SfgIhTg2b-0aciesFrTV5Do1q3B5-XOt4kgN&currency=USD&disable-funding=credit"></script>
+
+	<script>
+		var total = '{{cart.get_cart_total}}'
+        // Render the PayPal button into #paypal-button-container
+        paypal.Buttons({
+
+        	style: {
+                color:  'blue',
+                shape:  'rect',
+            },
+
+            // Set up the transaction
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value:parseFloat(total).toFixed(2)
+                        }
+                    }]
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    // Show a success message to the buyer
+                    submitFormData()
+                });
+            }
+
+        }).render('#paypal-button-container');
+    </script>
+
+	<script type="text/javascript">
+		var form = document.getElementById('form')
+		form.addEventListener('submit', function(e){
+	    	e.preventDefault()
+	    	console.log('Form Submitted...')
+	    	document.getElementById('form-button').hidden = true;
+	    	document.getElementById('payment-info').hidden = false
+	    })
+
+			
+	    document.getElementById('make-payment').addEventListener('click', function(e){
+	    	submitFormData()
+	    })
+
+	    function submitFormData(){
+	    	console.log('Payment button clicked')
+
+	    	var userFormData = {
+				'name':form.name.value,
+				'email':form.email.value,
+				'total':total,
+			}
+
+			var shippingInfo = {
+				'address':form.address.value,
+				'city':form.city.value,
+				'state':form.state.value,
+				'zipcode':form.zipcode.value,
+			}
+			console.log("userFormData", userFormData)
+			console.log("shippingInfo", shippingInfo)
+			var url = "/cart/process_order/"
+			fetch(url, {
+				method:'POST',
+				headers:{
+					'Content-Type':'applicaiton/json',
+					'X-CSRFToken':csrftoken,
+				}, 
+				body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo}),
+	    	})
+	    	.then((response) => response.json())
+	    	.then((data) => {
+					console.log('Success:', data);
+					alert('Transaction completed');  
+					window.location.href = "{% url 'home' %}"
+				})
+			}
+	</script>
+{% endblock content %}

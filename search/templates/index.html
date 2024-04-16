@@ -1,0 +1,64 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+  {% comment %} <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Description</th>
+        <th scope="col">Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for data in data %}
+      <tr>
+        <td>{{ data.title }}</td>
+        <td>{{ data.description }}</td>
+        <td>{{ data.price }}</td>
+        <td>
+          <button class="update-cart" data-product={{data.id}} data-action="add">Add to Cart</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table> {% endcomment %}
+
+   {% for data in data %}
+    
+      <div class=" col-xl-4" style="margin-top: 20px">
+        <div class="card" style="border-radius: 15px;">
+          <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light"
+            data-mdb-ripple-color="light">
+            {% comment %} src="https://mdbcdn.b-cdn.net/img/Photos/Horizontal/E-commerce/Products/12.webp" {% endcomment %}
+            <img src="{{data.image.url}}"
+              style="border-top-left-radius: 15px; border-top-right-radius: 15px;" class="img-fluid"
+              alt="Book" />
+            <a href="#!">
+              <div class="mask"></div>
+            </a>
+          </div>
+          <div class="card-body pb-0">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p><a href="#!" class="text-dark">{{data.title}}</a></p>
+              </div>
+            </div>
+          </div>
+          <hr class="my-0" />
+          <div class="card-body pb-0">
+            <div class="d-flex justify-content-between">
+              <p><a href="#!" class="text-dark">{{data.price}} VND</a></p>
+            </div>
+          </div>
+          <hr class="my-0" />
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
+              <button type="button" class="btn btn-outline-secondary update-cart" data-product={{data.id}} data-action="add">Add to Cart</button>
+              <a href="#!" class="btn btn-outline-success">View</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+   {% endfor %}
+{% endblock  %}
